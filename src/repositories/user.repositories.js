@@ -98,3 +98,113 @@ export const getUserPreferencesByUserId = async (userId) => {
     conn.release();
   }
 };
+
+//review 데이터 삽입
+export const addReview = async (data) => {
+  const conn = await pool.getConnection();
+
+  try {
+    const [confirm] = await pool.query(
+      `SELECT * FROM store where id = ?;`,
+      data.storeid
+    );
+
+    if (confirm.length === 0) {
+      return null;
+    }
+
+    const [result] = await pool.query(
+      `INSERT INTO review (userid, storeid, content, score) VALUES (?, ?, ?, ?);`,
+      [
+        data.userid,
+        data.storeid,
+        data.content,
+        data.score
+      ]
+    );
+
+    return result.insertId;
+  } catch (err) {
+    throw new Error(
+      `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`
+    );
+  } finally {
+    conn.release();
+  }
+};
+
+//리뷰 정보 얻기
+export const getReview = async (reviewId) => {
+  const conn = await pool.getConnection();
+
+  try {
+    const [review] = await pool.query(`SELECT * FROM review WHERE id = ?;`, reviewId);
+    console.log(review);
+
+    if (review.length == 0) {
+      return null;
+    }
+
+    return review[0];
+  } catch (err) {
+    throw new Error(
+      `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`
+    );
+  } finally {
+    conn.release();
+  }
+};
+
+//review 데이터 삽입
+export const addMission = async (data) => {
+  const conn = await pool.getConnection();
+
+  try {
+    const [confirm] = await pool.query(
+      `SELECT * FROM user_mission where userid = ? and missionid = ?;`,
+      [data.userid, data.missionid]
+    );
+
+    if (confirm.length !== 0) {
+      return null;
+    }
+
+    const [result] = await pool.query(
+      `INSERT INTO user_mission (userid, missionid) VALUES (?, ?);`,
+      [
+        data.userid,
+        data.missionid,
+      ]
+    );
+
+    return result.insertId;
+  } catch (err) {
+    throw new Error(
+      `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`
+    );
+  } finally {
+    conn.release();
+  }
+};
+
+//미션 정보 얻기
+export const getMission = async (userMissionId) => {
+  const conn = await pool.getConnection();
+
+  try {
+    const [mission] = await pool.query(`SELECT * FROM user_mission WHERE id = ?;`, userMissionId);
+    console.log(mission);
+
+    if (mission.length == 0) {
+      return null;
+    }
+
+    return mission[0];
+  } catch (err) {
+    throw new Error(
+      `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`
+    );
+  } finally {
+    conn.release();
+  }
+};
