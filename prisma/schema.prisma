@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique(map: "email") @db.VarChar(100)
+  name          String   @db.VarChar(10)
+  gender        Gender   
+  birth         DateTime @db.Date
+  address1      String   @db.VarChar(100)
+  address2      String   @db.VarChar(100)
+  phoneNumber   String   @map("phone_number") @db.Char(11)
+
+  userFoodCategories UserFoodCategory[]
+    reviews         Review[]
+  userMissions    UserMission[]
+ 
+  @@map("user")  
+}
+
+enum Gender {
+  M
+  F
+}
+
+model FoodCategory {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(10)
+
+  userFoodCategories UserFoodCategory[]
+
+  @@map("food")
+}
+
+model UserFoodCategory {
+  id             Int          @id @default(autoincrement())
+  user           User         @relation(fields: [userId], references: [id])
+  userId         Int          
+  foodCategory   FoodCategory @relation(fields: [foodId], references: [id])
+  foodId         Int          
+
+  @@map("user_food")
+}
+
+model Store {
+  id        Int       @id @default(autoincrement())
+  name      String
+  address   String
+  opentime  DateTime  @db.Time
+  closetime DateTime  @db.Time
+  reviews   Review[]
+  missions  Mission[]
+}
+
+model Review {
+  id      Int    @id @default(autoincrement())
+  user    User   @relation(fields: [userId], references: [id])
+  userId  Int
+  store   Store  @relation(fields: [storeId], references: [id])
+  storeId Int
+  content String?
+  score   Int
+}
+
+model Mission {
+  id        Int           @id @default(autoincrement())
+  store     Store         @relation(fields: [storeId], references: [id])
+  storeId   Int
+  date      DateTime
+  point     Int
+  cost      Int
+  userMissions UserMission[]
+}
+
+model UserMission {
+  id         Int     @id @default(autoincrement())
+  user       User    @relation(fields: [userId], references: [id])
+  userId     Int
+  mission    Mission @relation(fields: [missionId], references: [id])
+  missionId  Int
+  isClear    Boolean @default(false)
+  missionNum String? @db.Char(10)
+}

@@ -1,6 +1,11 @@
 import { StatusCodes } from 'http-status-codes';
 import { bodyToMission, bodyToReview, bodyToUser } from '../dtos/user.dto.js';
-import { postMissions, postReviews, userSignUp } from '../services/user.services.js';
+import {
+  getReviewList,
+  postMissions,
+  postReviews,
+  userSignUp,
+} from '../services/user.services.js';
 
 export const handleUserSignUp = async (req, res, next) => {
   console.log('회원가입을 요청했습니다!');
@@ -24,4 +29,17 @@ export const handlePostMissons = async (req, res, next) => {
 
   const mission = await postMissions(bodyToMission(req.body));
   res.status(StatusCodes.OK).json({ result: mission });
+};
+
+export const handleStoreReviewList = async (req, res, next) => {
+  const storeId = parseInt(req.params.storeId);
+  const cursor =
+    typeof req.query.cursor === 'string' ? parseInt(req.query.cursor) : 0;
+
+  const { reviews, nextCursor } = await getReviewList(storeId, cursor);
+
+  res.status(StatusCodes.OK).json({
+    reviews,
+    nextCursor,
+  });
 };

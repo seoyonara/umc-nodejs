@@ -1,9 +1,14 @@
-import { responseFromMission, responseFromUser } from '../dtos/user.dto.js';
+import {
+  responseFromMission,
+  responseFromReviewList,
+  responseFromUser,
+} from '../dtos/user.dto.js';
 import { responseFromReview } from '../dtos/user.dto.js';
 import {
   addMission,
   addReview,
   addUser,
+  getAllStoreReviews,
   getMission,
   getReview,
   getUser,
@@ -36,34 +41,43 @@ export const userSignUp = async (data) => {
   return responseFromUser({ user, preferences });
 };
 
-export const postReviews = async(data) => {
+export const postReviews = async (data) => {
   const newReviewId = await addReview({
     userid: data.userid,
     storeid: data.storeid,
     content: data.content,
-    score: data.score
-  })
+    score: data.score,
+  });
 
-  if(newReviewId === null){
+  if (newReviewId === null) {
     throw new Error('존재하지 않는 가게입니다');
   }
 
   const review = await getReview(newReviewId);
-  
-  return responseFromReview({review});
-}
 
-export const postMissions = async(data) => {
+  return responseFromReview({ review });
+};
+
+export const postMissions = async (data) => {
   const newMissionId = await addMission({
     userid: data.userid,
     missionid: data.missionid,
-  })
+  });
 
-  if(!newMissionId){
+  if (!newMissionId) {
     throw new Error('이미 도전 중인 미션입니다');
   }
 
   const mission = await getMission(newMissionId);
-  
-  return responseFromMission({mission});
-}
+
+  return responseFromMission({ mission });
+};
+
+export const getReviewList = async (storeId, cursor) => {
+  const reviewList = await getAllStoreReviews(storeId, cursor);
+  const nextCursor = reviewList.length === 5 ? reviewList[4].id : null;
+  return {
+    reviews: responseFromReviewList(reviewList),
+    nextCursor,
+  };
+};

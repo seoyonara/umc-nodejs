@@ -14,49 +14,61 @@ export const bodyToUser = (body) => {
 };
 
 export const responseFromUser = ({ user, preferences }) => {
+  const preferFoods = preferences.map(
+    (preference) => preference.foodCategory.name
+  );
+
   return {
-    name: user.name,
-    gender: user.gender,
-    birth: user.birth,
     email: user.email,
-    address1: user.address1,
-    address2: user.address2,
-    phoneNumber: user.phoneNumber,
-    food: preferences,
+    name: user.name,
+    food: preferFoods,
   };
 };
 
 export const bodyToReview = (body) => {
-  
   return {
     userid: body.userid,
     storeid: body.storeid,
     content: body.content,
     score: body.score,
   };
-}
+};
 
-export const responseFromReview = ({review}) => {
-  return{
+export const responseFromReview = ({ review }) => {
+  return {
     userid: review.userid,
     storeid: review.storeid,
     content: review.content,
-    score: review.score
-  }
-}
+    score: review.score,
+  };
+};
 
 export const bodyToMission = (body) => {
-  
   return {
     userid: body.userid,
     missionid: body.missionid,
   };
-}
+};
 
-export const responseFromMission = ({mission}) => {
-  return{
+export const responseFromMission = ({ mission }) => {
+  return {
     userid: mission.userid,
     missionid: mission.missionid,
-    isclear: mission.isclear
-  }
-}
+    isclear: mission.isclear,
+  };
+};
+
+export const responseFromReviewList = (reviewList) => {
+  return reviewList.map((review) => ({
+    id: review.id,
+    content: review.content,
+    user: {
+      id: review.user.id,
+      name: review.user.name,
+    },
+    store: {
+      name: review.store.name,
+      address: review.store.address,
+    },
+  }));
+};
