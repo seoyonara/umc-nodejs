@@ -52,9 +52,9 @@ export const bodyToMission = (body) => {
 
 export const responseFromMission = ({ mission }) => {
   return {
-    userid: mission.userid,
-    missionid: mission.missionid,
-    isclear: mission.isclear,
+    userid: mission.userId,
+    missionid: mission.missionId,
+    isclear: mission.isClear,
   };
 };
 
@@ -71,4 +71,39 @@ export const responseFromReviewList = (reviewList) => {
       address: review.store.address,
     },
   }));
+};
+
+export const responseFromMissionList = (missionList) => {
+  return missionList.map((mission) => ({
+    id: mission.id,
+    store: {
+      name: mission.store.name,
+      address: mission.store.address,
+    },
+    date: mission.date,
+    point: mission.point,
+    cost: mission.cost,
+  }));
+};
+
+export const responseFromUserMissionList = (missionList) => {
+  return missionList.map((userMission) => ({
+    id: userMission.id,
+    mission: {
+      name: userMission.mission.store.name,
+      address: userMission.mission.store.address,
+    },
+    isClear: userMission.isClear,
+  }));
+};
+
+export const responseFromMissionUpdate = (userMission) => {
+  return {
+    id: userMission.id,
+    mission: {
+      name: userMission.mission.store.name,
+      address: userMission.mission.store.address,
+    },
+    isclear: userMission.isClear,
+  };
 };

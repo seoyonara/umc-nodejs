@@ -1,18 +1,25 @@
 import {
   responseFromMission,
+  responseFromMissionList,
+  responseFromMissionUpdate,
   responseFromReviewList,
   responseFromUser,
+  responseFromUserMissionList,
 } from '../dtos/user.dto.js';
 import { responseFromReview } from '../dtos/user.dto.js';
 import {
   addMission,
   addReview,
   addUser,
+  getAllStoreMissions,
   getAllStoreReviews,
+  getAllUserMissions,
+  getAllUserReviews,
   getMission,
   getReview,
   getUser,
   getUserPreferencesByUserId,
+  patchMissionClear,
   setPreference,
 } from '../repositories/user.repositories.js';
 
@@ -69,6 +76,7 @@ export const postMissions = async (data) => {
   }
 
   const mission = await getMission(newMissionId);
+  console.log(mission);
 
   return responseFromMission({ mission });
 };
@@ -79,5 +87,42 @@ export const getReviewList = async (storeId, cursor) => {
   return {
     reviews: responseFromReviewList(reviewList),
     nextCursor,
+  };
+};
+
+export const getUserReviewList = async (userId, cursor) => {
+  const reviewList = await getAllUserReviews(userId, cursor);
+  const nextCursor = reviewList.length === 5 ? reviewList[4].id : null;
+  return {
+    reviews: responseFromReviewList(reviewList),
+    nextCursor,
+  };
+};
+
+export const getMissionList = async (storeId, cursor) => {
+  const missionList = await getAllStoreMissions(storeId, cursor);
+  const nextCursor = missionList.length === 5 ? missionList[4].id : null;
+  return {
+    missions: responseFromMissionList(missionList),
+    nextCursor,
+  };
+};
+
+export const getUserMissionList = async (userId, cursor) => {
+  const missionList = await getAllUserMissions(userId, cursor);
+  const nextCursor = missionList.length === 5 ? missionList[4].id : null;
+  return {
+    missions: responseFromUserMissionList(missionList),
+    nextCursor,
+  };
+};
+
+export const patchMissionState = async (userMissionId) => {
+  const mission = await patchMissionClear(userMissionId);
+  if (!mission) {
+    throw new Error('존재하지 않는 미션입니다!');
+  }
+  return {
+    mission: responseFromMissionUpdate(mission),
   };
 };

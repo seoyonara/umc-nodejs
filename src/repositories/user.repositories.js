@@ -1,4 +1,4 @@
-import { pool, prisma } from '../db.config.js';
+import { prisma } from '../db.config.js';
 
 //User 데이터 삽입
 export const addUser = async (data) => {
@@ -45,110 +45,52 @@ export const getUserPreferencesByUserId = async (userId) => {
 
 //review 데이터 삽입
 export const addReview = async (data) => {
-  const conn = await pool.getConnection();
+  const store = await prisma.store.findUnique({ where: { id: data.storeid } });
+  if (!store) return null;
 
-  try {
-    const [confirm] = await pool.query(
-      `SELECT * FROM store where id = ?;`,
-      data.storeid
-    );
+  const created = await prisma.review.create({
+    data: {
+      userId: data.userid,
+      storeId: data.storeid,
+      content: data.content,
+      score: data.score,
+    },
+  });
 
-    if (confirm.length === 0) {
-      return null;
-    }
-
-    const [result] = await pool.query(
-      `INSERT INTO review (userid, storeid, content, score) VALUES (?, ?, ?, ?);`,
-      [data.userid, data.storeid, data.content, data.score]
-    );
-
-    return result.insertId;
-  } catch (err) {
-    throw new Error(
-      `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`
-    );
-  } finally {
-    conn.release();
-  }
+  return created.id;
 };
 
 //리뷰 정보 얻기
 export const getReview = async (reviewId) => {
-  const conn = await pool.getConnection();
-
-  try {
-    const [review] = await pool.query(
-      `SELECT * FROM review WHERE id = ?;`,
-      reviewId
-    );
-    console.log(review);
-
-    if (review.length == 0) {
-      return null;
-    }
-
-    return review[0];
-  } catch (err) {
-    throw new Error(
-      `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`
-    );
-  } finally {
-    conn.release();
-  }
+  return await prisma.review.findUnique({ where: { id: reviewId } });
 };
 
 //review 데이터 삽입
 export const addMission = async (data) => {
-  const conn = await pool.getConnection();
+  const existing = await prisma.userMission.findFirst({
+    where: { userId: data.userid, missionId: data.missionid },
+  });
 
-  try {
-    const [confirm] = await pool.query(
-      `SELECT * FROM user_mission where userid = ? and missionid = ?;`,
-      [data.userid, data.missionid]
-    );
+  if (existing) return null;
 
-    if (confirm.length !== 0) {
-      return null;
-    }
+  const created = await prisma.userMission.create({
+    data: {
+      userId: data.userid,
+      missionId: data.missionid,
+    },
+  });
 
-    const [result] = await pool.query(
-      `INSERT INTO user_mission (userid, missionid) VALUES (?, ?);`,
-      [data.userid, data.missionid]
-    );
-
-    return result.insertId;
-  } catch (err) {
-    throw new Error(
-      `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`
-    );
-  } finally {
-    conn.release();
-  }
+  return created.id;
 };
 
 //미션 정보 얻기
 export const getMission = async (userMissionId) => {
-  const conn = await pool.getConnection();
-
-  try {
-    const [mission] = await pool.query(
-      `SELECT * FROM user_mission WHERE id = ?;`,
-      userMissionId
-    );
-    console.log(mission);
-
-    if (mission.length == 0) {
-      return null;
-    }
-
-    return mission[0];
-  } catch (err) {
-    throw new Error(
-      `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`
-    );
-  } finally {
-    conn.release();
-  }
+  return await prisma.userMission.findUnique({
+    where: { id: userMissionId },
+    include: {
+      mission: true,
+    },
+  });
 };
 
 export const getAllStoreReviews = async (storeId, cursor) => {
@@ -167,4 +109,92 @@ export const getAllStoreReviews = async (storeId, cursor) => {
   });
 
   return reviews;
+};
+
+export const getAllUserReviews = async (userId, cursor) => {
+  const reviews = await prisma.review.findMany({
+    select: {
+      id: true,
+      content: true,
+      storeId: true,
+      userId: true,
+      store: true,
+      user: true,
+    },
+    where: { userId: userId, id: { gt: cursor } },
+    orderBy: { id: 'asc' },
+    take: 5,
+  });
+
+  return reviews;
+};
+
+export const getAllStoreMissions = async (storeId, cursor) => {
+  const missions = await prisma.mission.findMany({
+    select: {
+      id: true,
+      storeId: true,
+      store: true,
+      date: true,
+      point: true,
+      cost: true,
+    },
+    where: { storeId: storeId, id: { gt: cursor } },
+    orderBy: { id: 'asc' },
+    take: 5,
+  });
+
+  return missions;
+};
+
+export const getAllUserMissions = async (userId, cursor) => {
+  const missions = await prisma.userMission.findMany({
+    select: {
+      id: true,
+      userId: true,
+      missionId: true,
+      isClear: true,
+      mission: {
+        select: {
+          id: true,
+          store: {
+            select: {
+              name: true,
+              address: true,
+            },
+          },
+        },
+      },
+    },
+    where: {
+      userId: userId,
+      id: { gt: cursor },
+    },
+    orderBy: { id: 'asc' },
+    take: 5,
+  });
+
+  return missions;
+};
+
+export const patchMissionClear = async (userMissionId) => {
+  const existing = await prisma.userMission.findFirst({
+    where: { id: userMissionId },
+  });
+
+  if (!existing) return null;
+
+  const updated = await prisma.userMission.update({
+    where: { id: userMissionId },
+    data: { isClear: true },
+    include: {
+      mission: {
+        include: {
+          store: true,
+        },
+      },
+    },
+  });
+
+  return updated;
 };

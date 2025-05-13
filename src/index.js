@@ -6,6 +6,10 @@ import {
   handlePostReviews,
   handlePostMissons,
   handleStoreReviewList,
+  handleUserReviewList,
+  handleStoreMissionList,
+  handleUserMissionList,
+  handleMissionClear,
 } from './controllers/user.controllers.js';
 
 dotenv.config();
@@ -25,7 +29,12 @@ app.get('/', (req, res) => {
 app.post('/signin', handleUserSignUp);
 app.post('/reviews', handlePostReviews);
 app.post('/missions', handlePostMissons);
+
 app.get('/reviews/stores/:storeId', handleStoreReviewList);
+app.get('/reviews/users/:userId', handleUserReviewList);
+app.get('/missions/stores/:storeId', handleStoreMissionList);
+app.get('/missions/users/:userId', handleUserMissionList);
+app.patch('/missions/:userMissionId/clear', handleMissionClear);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

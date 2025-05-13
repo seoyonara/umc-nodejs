@@ -1,7 +1,11 @@
 import { StatusCodes } from 'http-status-codes';
 import { bodyToMission, bodyToReview, bodyToUser } from '../dtos/user.dto.js';
 import {
+  getMissionList,
   getReviewList,
+  getUserMissionList,
+  getUserReviewList,
+  patchMissionState,
   postMissions,
   postReviews,
   userSignUp,
@@ -41,5 +45,53 @@ export const handleStoreReviewList = async (req, res, next) => {
   res.status(StatusCodes.OK).json({
     reviews,
     nextCursor,
+  });
+};
+
+export const handleUserReviewList = async (req, res, next) => {
+  const userId = parseInt(req.params.userId);
+  const cursor =
+    typeof req.query.cursor === 'string' ? parseInt(req.query.cursor) : 0;
+
+  const { reviews, nextCursor } = await getUserReviewList(userId, cursor);
+
+  res.status(StatusCodes.OK).json({
+    reviews,
+    nextCursor,
+  });
+};
+
+export const handleStoreMissionList = async (req, res, next) => {
+  const storeId = parseInt(req.params.storeId);
+  const cursor =
+    typeof req.query.cursor === 'string' ? parseInt(req.query.cursor) : 0;
+
+  const { missions, nextCursor } = await getMissionList(storeId, cursor);
+
+  res.status(StatusCodes.OK).json({
+    missions,
+    nextCursor,
+  });
+};
+
+export const handleUserMissionList = async (req, res, next) => {
+  const userId = parseInt(req.params.userId);
+  const cursor =
+    typeof req.query.cursor === 'string' ? parseInt(req.query.cursor) : 0;
+
+  const { missions, nextCursor } = await getUserMissionList(userId, cursor);
+
+  res.status(StatusCodes.OK).json({
+    missions,
+    nextCursor,
+  });
+};
+
+export const handleMissionClear = async (req, res, next) => {
+  const userMissionId = parseInt(req.params.userMissionId);
+  const { mission } = await patchMissionState(userMissionId);
+
+  res.status(StatusCodes.OK).json({
+    mission,
   });
 };
