@@ -16,7 +16,7 @@ export const handleUserSignUp = async (req, res, next) => {
   console.log('body: ', req.body);
 
   const user = await userSignUp(bodyToUser(req.body));
-  res.status(StatusCodes.OK).json({ result: user });
+  res.status(StatusCodes.OK).success(user);
 };
 
 export const handlePostReviews = async (req, res, next) => {
