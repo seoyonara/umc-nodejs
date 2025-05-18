@@ -7,7 +7,12 @@ import {
   responseFromUserMissionList,
 } from '../dtos/user.dto.js';
 import { responseFromReview } from '../dtos/user.dto.js';
-import { DuplicateUserEmailError } from '../error.js';
+import {
+  DuplicateUserEmailError,
+  MissionAlreadyActiveError,
+  MissionNotExistError,
+  StoreNotExistError,
+} from '../error.js';
 import {
   addMission,
   addReview,
@@ -58,7 +63,7 @@ export const postReviews = async (data) => {
   });
 
   if (newReviewId === null) {
-    throw new Error('존재하지 않는 가게입니다');
+    throw new StoreNotExistError('존재하지 않는 가게입니다.', data);
   }
 
   const review = await getReview(newReviewId);
@@ -72,8 +77,8 @@ export const postMissions = async (data) => {
     missionid: data.missionid,
   });
 
-  if (!newMissionId) {
-    throw new Error('이미 도전 중인 미션입니다');
+  if (newMissionId) {
+    throw new MissionAlreadyActiveError('이미 도전 중인 미션입니다', data);
   }
 
   const mission = await getMission(newMissionId);
@@ -121,7 +126,7 @@ export const getUserMissionList = async (userId, cursor) => {
 export const patchMissionState = async (userMissionId) => {
   const mission = await patchMissionClear(userMissionId);
   if (!mission) {
-    throw new Error('존재하지 않는 미션입니다!');
+    throw new MissionNotExistError('존재하지 않는 미션입니다!');
   }
   return {
     mission: responseFromMissionUpdate(mission),

@@ -24,7 +24,7 @@ export const handlePostReviews = async (req, res, next) => {
   console.log('body: ', req.body);
 
   const review = await postReviews(bodyToReview(req.body));
-  res.status(StatusCodes.OK).json({ result: review });
+  res.status(StatusCodes.OK).success(review);
 };
 
 export const handlePostMissons = async (req, res, next) => {
@@ -32,7 +32,7 @@ export const handlePostMissons = async (req, res, next) => {
   console.log('body: ', req.body);
 
   const mission = await postMissions(bodyToMission(req.body));
-  res.status(StatusCodes.OK).json({ result: mission });
+  res.status(StatusCodes.OK).success(mission);
 };
 
 export const handleStoreReviewList = async (req, res, next) => {
@@ -42,7 +42,7 @@ export const handleStoreReviewList = async (req, res, next) => {
 
   const { reviews, nextCursor } = await getReviewList(storeId, cursor);
 
-  res.status(StatusCodes.OK).json({
+  res.status(StatusCodes.OK).success({
     reviews,
     nextCursor,
   });
@@ -55,7 +55,7 @@ export const handleUserReviewList = async (req, res, next) => {
 
   const { reviews, nextCursor } = await getUserReviewList(userId, cursor);
 
-  res.status(StatusCodes.OK).json({
+  res.status(StatusCodes.OK).success({
     reviews,
     nextCursor,
   });
@@ -68,7 +68,7 @@ export const handleStoreMissionList = async (req, res, next) => {
 
   const { missions, nextCursor } = await getMissionList(storeId, cursor);
 
-  res.status(StatusCodes.OK).json({
+  res.status(StatusCodes.OK).success({
     missions,
     nextCursor,
   });
@@ -81,7 +81,7 @@ export const handleUserMissionList = async (req, res, next) => {
 
   const { missions, nextCursor } = await getUserMissionList(userId, cursor);
 
-  res.status(StatusCodes.OK).json({
+  res.status(StatusCodes.OK).success({
     missions,
     nextCursor,
   });
@@ -91,7 +91,7 @@ export const handleMissionClear = async (req, res, next) => {
   const userMissionId = parseInt(req.params.userMissionId);
   const { mission } = await patchMissionState(userMissionId);
 
-  res.status(StatusCodes.OK).json({
+  res.status(StatusCodes.OK).success({
     mission,
   });
 };

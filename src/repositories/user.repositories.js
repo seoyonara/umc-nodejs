@@ -1,4 +1,5 @@
 import { prisma } from '../db.config.js';
+import { MissionNotExistError } from '../error.js';
 
 //User 데이터 삽입
 export const addUser = async (data) => {
@@ -65,22 +66,26 @@ export const getReview = async (reviewId) => {
   return await prisma.review.findUnique({ where: { id: reviewId } });
 };
 
-//review 데이터 삽입
+//Mission 데이터 삽입
 export const addMission = async (data) => {
-  const existing = await prisma.userMission.findFirst({
-    where: { userId: data.userid, missionId: data.missionid },
-  });
+  try {
+    const existing = await prisma.userMission.findFirst({
+      where: { userId: data.userid, missionId: data.missionid },
+    });
 
-  if (existing) return null;
+    if (existing) return null;
 
-  const created = await prisma.userMission.create({
-    data: {
-      userId: data.userid,
-      missionId: data.missionid,
-    },
-  });
+    const created = await prisma.userMission.create({
+      data: {
+        userId: data.userid,
+        missionId: data.missionid,
+      },
+    });
 
-  return created.id;
+    return created.id;
+  } catch (err) {
+    throw new MissionNotExistError('존재하지 않는 미션입니다.', data);
+  }
 };
 
 //미션 정보 얻기
