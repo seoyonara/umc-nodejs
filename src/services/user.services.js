@@ -77,7 +77,8 @@ export const postMissions = async (data) => {
     missionid: data.missionid,
   });
 
-  if (newMissionId) {
+  console.log(newMissionId);
+  if (!newMissionId) {
     throw new MissionAlreadyActiveError('이미 도전 중인 미션입니다', data);
   }
 
